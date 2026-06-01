@@ -1,0 +1,67 @@
+services:
+
+  postgres:
+
+    image: postgres:15
+
+    container_name: postgres_pinterest
+
+    restart: always
+
+    environment:
+
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: pinterest
+
+    ports:
+
+      - "5432:5432"
+
+    volumes:
+
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+
+    build: ./backend
+
+    container_name: backend_pinterest
+
+    restart: always
+
+    ports:
+
+      - "3000:3000"
+
+    environment:
+
+      DB_USER: admin
+      DB_PASSWORD: admin123
+      DB_NAME: pinterest
+      DB_HOST: postgres
+      DB_PORT: 5432
+
+    depends_on:
+
+      - postgres
+
+  frontend:
+
+    build: ./frontend
+
+    container_name: frontend_pinterest
+
+    restart: always
+
+    ports:
+
+      - "80:80"
+
+    depends_on:
+
+      - backend
+
+volumes:
+
+  postgres_data:

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Subir publicación</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+
+    font-family:Arial,sans-serif;
+
+    background:#f5f5f5;
+}
+
+header{
+
+    background:white;
+
+    padding:15px 30px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    box-shadow:0 2px 10px rgba(0,0,0,.1);
+}
+
+.logo{
+
+    font-size:28px;
+
+    color:#e60023;
+
+    font-weight:bold;
+}
+
+.menu button{
+
+    margin-left:10px;
+
+    padding:10px 15px;
+
+    border:none;
+
+    border-radius:15px;
+
+    cursor:pointer;
+}
+
+.inicio{
+
+    background:#efefef;
+}
+
+.perfil{
+
+    background:#111;
+
+    color:white;
+}
+
+.contenedor{
+
+    display:flex;
+
+    justify-content:center;
+
+    padding:40px;
+}
+
+.card{
+
+    background:white;
+
+    width:700px;
+
+    padding:30px;
+
+    border-radius:25px;
+
+    box-shadow:0 5px 20px rgba(0,0,0,.1);
+}
+
+.card h2{
+
+    margin-bottom:20px;
+
+    text-align:center;
+}
+
+input,
+textarea,
+select{
+
+    width:100%;
+
+    padding:12px;
+
+    margin-top:10px;
+
+    border-radius:12px;
+
+    border:1px solid #ccc;
+}
+
+textarea{
+
+    resize:none;
+
+    height:100px;
+}
+
+.publicar{
+
+    width:100%;
+
+    margin-top:20px;
+
+    background:#e60023;
+
+    color:white;
+
+    border:none;
+
+    padding:15px;
+
+    border-radius:20px;
+
+    cursor:pointer;
+
+    font-weight:bold;
+}
+
+#preview{
+
+    margin-top:20px;
+
+    text-align:center;
+}
+
+#preview img,
+#preview video{
+
+    max-width:100%;
+
+    border-radius:15px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<div class="logo">
+
+Pinterest Project
+
+</div>
+
+<div class="menu">
+
+<button
+class="inicio"
+onclick="window.location.href='feed.html'">
+
+🏠 Inicio
+
+</button>
+
+<button
+class="perfil"
+onclick="window.location.href='perfil.html'">
+
+👤 Mi Perfil
+
+</button>
+
+</div>
+
+</header>
+
+<div class="contenedor">
+<div class="card">
+
+<h2>Nueva publicación</h2>
+
+<input type="text" id="titulo" placeholder="Título">
+
+<textarea id="descripcion"
+placeholder="Descripción"></textarea>
+
+<select id="categoria">
+
+<option value="1">Flores</option>
+<option value="2">Arte</option>
+<option value="3">Naturaleza</option>
+<option value="4">Tecnología</option>
+<option value="5">Autos</option>
+<option value="6">Belleza</option>
+<option value="7">Moda</option>
+<option value="8">Deportes</option>
+<option value="9">Cocina</option>
+<option value="10">Animales</option>
+<option value="11">Artistas</option>
+
+</select>
+
+<input type="file" id="archivo">
+
+<div id="preview"></div>
+
+<button 
+class="publicar"
+onclick="subir()">
+
+Publicar
+</button>
+
+</div>
+</div>
+
+<script>
+
+async function subir(){
+
+    const formData = new FormData();
+
+    formData.append(
+        'titulo',
+        document.getElementById('titulo').value
+    );
+
+    formData.append(
+        'descripcion',
+        document.getElementById('descripcion').value
+    );
+
+    formData.append(
+        'categoria_id',
+        document.getElementById('categoria').value
+    );
+
+    formData.append(
+        'usuario_id',
+        localStorage.getItem('usuario_id')
+    );
+
+    formData.append(
+        'archivo',
+        document.getElementById('archivo').files[0]
+    );
+
+    const respuesta = await fetch(
+        'http://localhost:3000/publicaciones',
+    {
+
+        method:'POST',
+        body: formData
+
+    });
+
+    const datos = await respuesta.json();
+
+    alert(datos.mensaje || datos.error);
+
+}
+
+document
+.getElementById('archivo')
+.addEventListener(
+
+'change',
+
+function(){
+
+    const archivo =
+        this.files[0];
+
+    const preview =
+        document.getElementById('preview');
+
+    preview.innerHTML = '';
+
+    if(!archivo) return;
+
+    const url =
+        URL.createObjectURL(archivo);
+
+    if(
+        archivo.type.includes('image')
+    ){
+
+        preview.innerHTML =
+
+        `
+        <img src="${url}">
+        `;
+
+    }
+
+    else if(
+        archivo.type.includes('video')
+    ){
+
+        preview.innerHTML =
+
+        `
+        <video controls>
+
+        <source src="${url}">
+
+        </video>
+        `;
+
+    }
+
+});
+
+</script>
+
+</body>
+
+</html>

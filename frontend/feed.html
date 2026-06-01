@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Feed</title>
+
+
+<style>
+
+body{
+
+    margin:0;
+    font-family:Arial;
+    background:#f1f1f1;
+}
+
+/* HEADER */
+
+header{
+
+    background:white;
+
+    padding:15px 25px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    position:sticky;
+
+    top:0;
+
+    z-index:1000;
+
+    box-shadow:0 2px 10px rgba(0,0,0,0.1);
+}
+
+.logo{
+
+    font-size:28px;
+
+    font-weight:bold;
+
+    color:#e60023;
+}
+
+.usuario{
+
+    font-weight:bold;
+
+    margin-right:15px;
+}
+
+/* BOTONES */
+
+button{
+
+    padding:10px 15px;
+
+    border:none;
+
+    border-radius:25px;
+
+    cursor:pointer;
+
+    font-weight:bold;
+
+    transition:0.3s;
+}
+
+button:hover{
+
+    transform:scale(1.05);
+}
+
+.publicar{
+
+    background:#e60023;
+
+    color:white;
+}
+
+.logout{
+
+    background:black;
+
+    color:white;
+}
+
+/* BUSCADOR */
+
+input{
+
+    padding:10px;
+
+    border-radius:25px;
+
+    border:1px solid #ccc;
+
+    width:220px;
+
+    margin-right:10px;
+}
+
+/* GALERÍA */
+
+.galeria{
+
+    columns:4 250px;
+
+    column-gap:18px;
+
+    padding:20px;
+}
+
+/* TARJETAS */
+
+.card{
+
+    background:white;
+
+    margin-bottom:18px;
+
+    border-radius:20px;
+
+    overflow:hidden;
+
+    break-inside:avoid;
+
+    transition:0.3s;
+
+    box-shadow:0 4px 15px rgba(0,0,0,0.1);
+}
+
+.card:hover{
+
+    transform:translateY(-5px);
+
+    box-shadow:0 8px 20px rgba(0,0,0,0.2);
+}
+
+/* MULTIMEDIA */
+
+.card img,
+.card video{
+
+    width:100%;
+
+    display:block;
+}
+
+/* INFO */
+
+.info{
+
+    padding:15px;
+}
+
+.info h3{
+
+    margin-top:0;
+}
+
+/* COMENTARIOS */
+
+.comentarios{
+
+    background:#f8f8f8;
+
+    padding:10px;
+
+    border-radius:10px;
+
+    margin-top:10px;
+
+    max-height:150px;
+
+    overflow:auto;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:900px){
+
+    .galeria{
+
+        columns:2 200px;
+    }
+
+}
+
+@media(max-width:600px){
+
+    .galeria{
+
+        columns:1;
+    }
+
+}
+
+/* BUSCADOR */
+
+.buscador{
+
+    display:flex;
+
+    gap:10px;
+}
+
+.buscador input{
+
+    width:250px;
+
+    padding:10px;
+
+    border-radius:20px;
+
+    border:1px solid #ccc;
+}
+
+</style>
+
+
+</head>
+
+<body>
+
+<header>
+
+<div class="logo">
+
+Pinterest Project
+
+</div>
+
+<div class="buscador">
+
+<input
+type="text"
+id="busqueda"
+placeholder="Buscar categoría...">
+
+<button onclick="buscarCategoria()">
+
+🔍
+
+</button>
+
+<button onclick="volverInicio()">
+
+🏠
+
+</button>
+
+</div>
+
+<div>
+
+<button
+class="publicar"
+onclick="irPublicar()">
+
+➕ Publicar
+
+</button>
+
+<button
+onclick="irPerfil()">
+
+👤 Mi Perfil
+
+</button>
+
+<button
+class="logout"
+onclick="logout()">
+
+🚪 Salir
+
+</button>
+
+</div>
+
+</header>
+
+<div class="galeria"
+id="galeria">
+
+</div>
+
+<script>
+
+/* VERIFICAR LOGIN */
+
+const usuario =
+    localStorage.getItem('usuario');
+
+const usuario_id =
+    localStorage.getItem('usuario_id');
+
+if(!usuario){
+
+    window.location.href = 'index.html';
+
+}
+
+
+/* LOGOUT */
+
+function logout(){
+
+    localStorage.clear();
+
+    window.location.href = 'index.html';
+
+}
+
+
+/* IR AL PERFIL */
+
+function irPerfil(){
+
+    window.location.href =
+    'perfil.html';
+
+}
+
+/* BUSCAR */
+
+async function buscarCategoria(){
+
+    const categoria =
+
+        document.getElementById(
+            'busqueda'
+        ).value;
+
+    /* GUARDAR PREFERENCIA */
+
+    localStorage.setItem(
+         'categoria_favorita',
+         categoria
+    );
+
+    const respuesta = await fetch(
+
+        `http://localhost:3000/buscar/${categoria}`
+
+    );
+
+    const publicaciones =
+        await respuesta.json();
+
+    const galeria = 
+	document.getElementById('galeria');
+
+    galeria.innerHTML = '';
+
+
+    publicaciones.forEach(pub => {
+
+    galeria.innerHTML +=
+        generarTarjeta(pub);
+
+    cargarComentarios(pub.id);
+
+    });
+
+
+}
+
+/* VOLVER A INICIO */
+
+function volverInicio(){
+
+    document.getElementById(
+        'busqueda'
+    ).value = '';
+
+    cargarPublicaciones();
+
+    cargarRecomendaciones();
+
+}
+
+/* IR A PUBLICAR */
+
+function irPublicar(){
+
+    window.location.href = 'subir.html';
+
+}
+
+/* CARGAR PUBLICACIONES */
+
+async function cargarPublicaciones(){
+
+    const respuesta =
+        await fetch(
+            'http://localhost:3000/publicaciones'
+        );
+
+    const publicaciones =
+        await respuesta.json();
+
+    const galeria =
+        document.getElementById('galeria');
+
+    galeria.innerHTML = '';
+
+    publicaciones.forEach(pub => {
+
+        galeria.innerHTML +=
+            generarTarjeta(pub);
+
+         cargarComentarios(pub.id);
+
+     });
+
+}
+
+
+function generarTarjeta(pub){
+
+    let multimedia = '';
+
+    if(pub.tipo.includes('image')){
+
+        multimedia = `
+        <img src="${pub.archivo}">
+        `;
+
+    }
+    else{
+
+        multimedia = `
+        <video controls>
+        <source src="${pub.archivo}">
+        </video>
+        `;
+    }
+
+    return `
+
+    <div class="card">
+
+        ${multimedia}
+
+        <div class="info">
+
+            <h3>${pub.titulo}</h3>
+
+            <p>${pub.descripcion}</p>
+
+            <small>
+            Categoría:
+            ${pub.categoria}
+            </small>
+
+            <br><br>
+
+            <button onclick="darLike(${pub.id})">
+
+            ❤️ Me gusta
+
+            (${pub.total_likes})
+
+            </button>
+
+            <br><br>
+
+            <a
+            href="http://localhost:3000/descargar/${pub.id}">
+
+            <button>
+
+            Descargar
+
+            </button>
+
+            </a>
+
+            <br><br>
+
+            <input
+            type="text"
+            id="comentario-${pub.id}"
+            placeholder="Escribe un comentario">
+
+            <button onclick="comentar(${pub.id})">
+
+            Comentar
+
+            </button>
+
+            <div
+            class="comentarios"
+            id="comentarios-${pub.id}">
+
+            </div>
+
+        </div>
+
+    </div>
+    `;
+}
+
+
+cargarPublicaciones();
+cargarRecomendaciones();
+
+async function darLike(publicacion_id){
+
+    const respuesta = await fetch(
+
+        'http://localhost:3000/like',
+
+        {
+
+            method:'POST',
+
+            headers:{
+                'Content-Type':'application/json'
+            },
+
+            body: JSON.stringify({
+
+                usuario_id:
+                localStorage.getItem('usuario_id'),
+
+                publicacion_id
+
+            })
+
+        }
+
+    );
+
+    const datos = await respuesta.json();
+
+    alert(datos.mensaje);
+
+    cargarPublicaciones();
+
+    cargarRecomendaciones();
+
+}
+
+
+/* RECOMENDACIONES */
+async function cargarRecomendaciones(){
+
+    const categoria =
+
+        localStorage.getItem(
+            'categoria_favorita'
+        );
+
+    if(!categoria){
+
+        return;
+
+    }
+
+    const respuesta = await fetch(
+
+       `http://localhost:3000/buscar/${categoria}`
+
+    );
+
+    const publicaciones =
+        await respuesta.json();
+
+    const galeria =
+        document.getElementById('galeria');
+
+    galeria.innerHTML += `
+
+    <h2 style="
+        column-span:all;
+        margin:20px 0;
+    ">
+
+    ⭐ Recomendado para ti
+
+    </h2>
+
+    `;
+
+    publicaciones.forEach(pub => {
+
+        galeria.innerHTML +=
+            generarTarjeta(pub);
+
+        cargarComentarios(pub.id);
+
+    });
+
+}
+
+
+/* COMENTAR */
+
+async function comentar(publicacion_id){
+
+    const comentario =
+
+        document.getElementById(
+          `comentario-${publicacion_id}`
+        ).value;
+
+    const respuesta = await fetch(
+
+        'http://localhost:3000/comentario',
+
+        {
+
+            method:'POST',
+
+            headers:{
+                'Content-Type':'application/json'
+            },
+
+            body: JSON.stringify({
+
+                comentario,
+
+                usuario_id:
+                localStorage.getItem('usuario_id'),
+
+                publicacion_id
+
+            })
+
+        }
+
+    );
+
+    const datos = await respuesta.json();
+
+    alert(datos.mensaje);
+
+    cargarComentarios(publicacion_id);
+
+}
+
+/* CARGAR COMENTARIOS */
+
+async function cargarComentarios(publicacion_id){
+
+    const respuesta = await fetch(
+
+       `http://localhost:3000/comentarios/${publicacion_id}`
+
+    );
+
+    const comentarios =
+        await respuesta.json();
+
+    const divComentarios =
+
+        document.getElementById(
+           `comentarios-${publicacion_id}`
+        );
+
+    divComentarios.innerHTML = '';
+
+    comentarios.forEach(com => {
+
+        divComentarios.innerHTML +=
+
+        `
+        <p>
+
+        <b>${com.username}:</b>
+
+        ${com.comentario}
+
+        </p>
+        `;
+
+    });
+
+}
+
+</script>
+
+</body>
+
+</html>

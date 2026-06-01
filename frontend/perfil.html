@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Mi Perfil</title>
+
+<style>
+
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#f5f5f5;
+}
+
+/* HEADER */
+
+header{
+
+    background:white;
+
+    padding:15px 30px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    box-shadow:0 2px 10px rgba(0,0,0,.1);
+}
+
+.logo{
+
+    font-size:28px;
+
+    color:#e60023;
+
+    font-weight:bold;
+}
+
+.menu button{
+
+    margin-left:10px;
+
+    padding:10px 15px;
+
+    border:none;
+
+    border-radius:20px;
+
+    cursor:pointer;
+}
+
+.inicio{
+
+    background:#efefef;
+}
+
+.publicar{
+
+    background:#e60023;
+
+    color:white;
+}
+
+/* PERFIL */
+
+.perfil{
+
+    text-align:center;
+
+    padding:30px;
+}
+
+.perfil h1{
+
+    margin-bottom:10px;
+}
+
+.estadisticas{
+
+    display:flex;
+
+    justify-content:center;
+
+    gap:40px;
+
+    margin-top:20px;
+}
+
+.stat{
+
+    background:white;
+
+    padding:20px;
+
+    border-radius:20px;
+
+    min-width:150px;
+
+    box-shadow:0 2px 10px rgba(0,0,0,.1);
+}
+
+.numero{
+
+    font-size:30px;
+
+    font-weight:bold;
+
+    color:#e60023;
+}
+
+/* GALERIA */
+
+.galeria{
+
+    columns:4 250px;
+
+    column-gap:15px;
+
+    padding:20px;
+}
+
+.card{
+
+    background:white;
+
+    margin-bottom:15px;
+
+    border-radius:20px;
+
+    overflow:hidden;
+
+    break-inside:avoid;
+
+    box-shadow:0 2px 10px rgba(0,0,0,.1);
+}
+
+.card img,
+.card video{
+
+    width:100%;
+}
+
+.info{
+
+    padding:15px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<div class="logo">
+
+Pinterest Project
+
+</div>
+
+<div class="menu">
+
+<button
+class="inicio"
+onclick="window.location.href='feed.html'">
+
+🏠 Inicio
+
+</button>
+
+<button
+class="publicar"
+onclick="window.location.href='subir.html'">
+
+➕ Publicar
+
+</button>
+
+</div>
+
+</header>
+
+<div class="perfil">
+
+<h1 id="usuario"></h1>
+
+<div class="estadisticas">
+
+<div class="stat">
+
+<div class="numero"
+id="totalPublicaciones">
+
+0
+
+</div>
+
+Publicaciones
+
+</div>
+
+<div class="stat">
+
+<div class="numero"
+id="totalLikes">
+
+0
+
+</div>
+
+Likes recibidos
+
+</div>
+
+</div>
+
+</div>
+
+<h2 style="text-align:center;">
+
+Mis publicaciones
+
+</h2>
+
+<div
+class="galeria"
+id="publicaciones">
+
+</div>
+
+<script>
+
+const usuario =
+localStorage.getItem('usuario');
+
+const usuario_id =
+localStorage.getItem('usuario_id');
+
+document.getElementById('usuario')
+.innerText = usuario;
+
+/* CARGAR ESTADISTICAS */
+
+async function cargarEstadisticas(){
+
+    const respuesta =
+    await fetch(
+
+   `http://localhost:3000/estadisticas/${usuario_id}`
+
+    );
+
+    const datos =
+    await respuesta.json();
+
+    document.getElementById(
+    'totalPublicaciones'
+    ).innerText =
+    datos.publicaciones;
+
+    document.getElementById(
+    'totalLikes'
+    ).innerText =
+    datos.likes;
+
+}
+
+/* CARGAR PUBLICACIONES */
+
+async function cargarMisPublicaciones(){
+
+    const respuesta =
+    await fetch(
+
+   `http://localhost:3000/mis-publicaciones/${usuario_id}`
+
+    );
+
+    const publicaciones =
+    await respuesta.json();
+
+    const div =
+    document.getElementById(
+    'publicaciones'
+    );
+
+    div.innerHTML = '';
+
+    publicaciones.forEach(pub=>{
+
+        let multimedia='';
+
+        if(pub.tipo.includes('image')){
+
+            multimedia=
+
+            `
+            <img src="${pub.archivo}">
+            `;
+        }
+        else{
+
+            multimedia=
+
+            `
+            <video controls>
+
+            <source src="${pub.archivo}">
+
+            </video>
+            `;
+        }
+
+        div.innerHTML +=
+
+        `
+        <div class="card">
+
+            ${multimedia}
+
+
+
+            <div class="info">
+
+	    <h3>${pub.titulo}</h3>
+
+	    <p>${pub.descripcion}</p>
+
+	    <br>
+
+	    <button
+	    onclick="eliminarPublicacion(${pub.id})"
+
+	    style="
+	    background:#e60023;
+	    color:white;
+	    width:100%;
+	    ">
+
+	    🗑️ Eliminar
+
+	    </button>
+
+	    </div>
+
+
+
+
+        </div>
+        `;
+
+    });
+
+}
+
+cargarEstadisticas();
+cargarMisPublicaciones();
+
+async function eliminarPublicacion(id){
+
+    const confirmar = confirm(
+
+        '¿Eliminar esta publicación?'
+
+    );
+
+    if(!confirmar){
+
+        return;
+
+    }
+
+    const respuesta = await fetch(
+
+       `http://localhost:3000/publicaciones/${id}`,
+
+        {
+
+            method:'DELETE'
+
+        }
+
+    );
+
+    const datos =
+        await respuesta.json();
+
+    alert(datos.mensaje);
+
+    cargarMisPublicaciones();
+
+    cargarEstadisticas();
+
+}
+
+</script>
+
+</body>
+
+</html>
