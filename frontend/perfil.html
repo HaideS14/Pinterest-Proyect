@@ -252,7 +252,7 @@ async function cargarEstadisticas(){
     const respuesta =
     await fetch(
 
-   `http://localhost:3000/estadisticas/${usuario_id}`
+   `https://pinterest-backend-br9e.onrender.com/estadisticas/${usuario_id}`
 
     );
 
@@ -278,7 +278,7 @@ async function cargarMisPublicaciones(){
     const respuesta =
     await fetch(
 
-   `http://localhost:3000/mis-publicaciones/${usuario_id}`
+   `https://pinterest-backend-br9e.onrender.com/mis-publicaciones/${usuario_id}`
 
     );
 
@@ -378,7 +378,7 @@ async function eliminarPublicacion(id){
 
     const respuesta = await fetch(
 
-       `http://localhost:3000/publicaciones/${id}`,
+       `https://pinterest-backend-br9e.onrender.com/publicaciones/${id}`,
 
         {
 

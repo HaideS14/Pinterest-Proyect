@@ -349,7 +349,7 @@ async function buscarCategoria(){
 
     const respuesta = await fetch(
 
-        `http://localhost:3000/buscar/${categoria}`
+        `https://pinterest-backend-br9e.onrender.com/buscar/${categoria}`
 
     );
 
@@ -402,7 +402,7 @@ async function cargarPublicaciones(){
 
     const respuesta =
         await fetch(
-            'http://localhost:3000/publicaciones'
+            'https://pinterest-backend-br9e.onrender.com/publicaciones'
         );
 
     const publicaciones =
@@ -475,7 +475,7 @@ function generarTarjeta(pub){
             <br><br>
 
             <a
-            href="http://localhost:3000/descargar/${pub.id}">
+            href="https://pinterest-backend-br9e.onrender.com/descargar/${pub.id}">
 
             <button>
 
@@ -518,7 +518,7 @@ async function darLike(publicacion_id){
 
     const respuesta = await fetch(
 
-        'http://localhost:3000/like',
+        'https://pinterest-backend-br9e.onrender.com/like',
 
         {
 
@@ -569,7 +569,7 @@ async function cargarRecomendaciones(){
 
     const respuesta = await fetch(
 
-       `http://localhost:3000/buscar/${categoria}`
+       `https://pinterest-backend-br9e.onrender.com/buscar/${categoria}`
 
     );
 
@@ -616,7 +616,7 @@ async function comentar(publicacion_id){
 
     const respuesta = await fetch(
 
-        'http://localhost:3000/comentario',
+        'https://pinterest-backend-br9e.onrender.com/comentario',
 
         {
 
@@ -655,7 +655,7 @@ async function cargarComentarios(publicacion_id){
 
     const respuesta = await fetch(
 
-       `http://localhost:3000/comentarios/${publicacion_id}`
+       `https://pinterest-backend-br9e.onrender.com/comentarios/${publicacion_id}`
 
     );
 
